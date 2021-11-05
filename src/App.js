@@ -1,4 +1,5 @@
 import logo from './logo.svg';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import {
   BrowserRouter as Router,
@@ -13,6 +14,8 @@ import {
 } from "react-router-dom";
 import { useState } from 'react';
 import {Details} from './components/details';
+import {Modal, Container, Row, Col, Button, Form} from 'react-bootstrap';
+import MyModal from './modal';
 
 function App(props) {
   return (
@@ -140,6 +143,7 @@ const NoMatch = () => {
 
 const FindBook = (props) => {
   let [book, setBook] = useState();
+  const [formModalShow, setFormModalShow] = useState(false);
   const submitAction = (evt) => {
     evt.preventDefault();
     const bookId = evt.target.id.value;
@@ -168,6 +172,10 @@ const FindBook = (props) => {
       }}>
       Delete book
       </button>
+      <button onClick={() => setFormModalShow(true)}>
+      Edit book
+      </button>
+      <MyModal inputbook={book} bookfacade={props.bookFacade} show={formModalShow} onHide={() => setFormModalShow(false)} />
     </div>
     }
   </div>

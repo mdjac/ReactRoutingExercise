@@ -21,6 +21,13 @@ function bookFacade() {
       books.push(book)
       nextId++;
     }
+
+    const editBook = (id, updatedBook) => {
+      const index = books.findIndex(obj => obj.id == id);
+      books[index] = {...updatedBook};
+      return books[index];
+    }
+
     
     return {
       // Remember all statements below are a shortcut for this version: getBooks: getBooks
@@ -28,6 +35,7 @@ function bookFacade() {
       findBook,
       deleteBook,
       addBook,
+      editBook,
     }
     }
     
