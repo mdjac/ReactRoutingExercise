@@ -10,17 +10,41 @@ import {
   useRouteMatch, 
   NavLink,
   useLocation,
-  Prompt
+  Prompt,
+  useHistory,
+  Redirect
 } from "react-router-dom";
+import React from 'react';
 import { useState } from 'react';
 import {Details} from './components/details';
 import {Modal, Container, Row, Col, Button, Form} from 'react-bootstrap';
 import MyModal from './modal';
 
+function PrivateRoute({component: Component, loggedIn, ...rest}){
+  const {pathname} = useLocation();
+  return (
+    <Route {...rest}>
+      {loggedIn === true ? (
+        <Component {...rest}/>
+      ) : (
+        <Redirect to={{pathname: "/login-out",state: {from: pathname}}}/>
+      )} 
+    </Route>
+  );
+}
+
+
 function App(props) {
+  const [loggedIn, setLoggedIn] = useState(false);
+  let history = useHistory();
+  const changeLoginStatus = (pageToGo) => {
+    setLoggedIn(!loggedIn);
+    history.push(pageToGo);
+  }
+
   return (
     <div>
-  <Header />
+  <Header loggedIn={loggedIn} loginMsg={loggedIn ? "Logout" : "Login"}/>
   <Switch>
     <Route exact path="/">
       <Home />
@@ -31,11 +55,10 @@ function App(props) {
     <Route path="/company">
       <Company />
     </Route>
-    <Route path="/add-book">
-      <AddBook bookFacade={props.bookFacade}/>
-    </Route>
-    <Route path="/find-book">
-      <FindBook bookFacade={props.bookFacade}/>
+    <PrivateRoute path="/add-book" loggedIn={loggedIn} component={AddBook} bookFacade={props.bookFacade}/>
+    <PrivateRoute path="/find-book" loggedIn={loggedIn} component={FindBook} bookFacade={props.bookFacade}/>
+    <Route path="/login-out">
+      <Login loginMsg={loggedIn ? "Logout" : "Login"} login={changeLoginStatus}/>
     </Route>
     <Route path="*">
             <NoMatch />
@@ -46,14 +69,24 @@ function App(props) {
   );
 }
 
-const Header = () => {
-  return( <ul className="header">
+const Header = (props) => {
+  return( 
+  <React.Fragment>
+  <ul className="header">
   <li><NavLink exact activeClassName="active" to="/">Home</NavLink></li>
   <li><NavLink activeClassName="active" to="/products">Products</NavLink></li>
-  <li><NavLink activeClassName="active" to="/add-book">Add Book</NavLink></li>
   <li><NavLink activeClassName="active" to="/company">Company</NavLink></li>
-  <li><NavLink activeClassName="active" to="/find-book">Find Book</NavLink></li>
+  {props.loggedIn &&
+  <React.Fragment>
+    <li><NavLink activeClassName="active" to="/add-book">Add Book</NavLink></li>
+    <li><NavLink activeClassName="active" to="/find-book">Find Book</NavLink></li>
+  </React.Fragment>
+  }
+<li>
+<li><NavLink activeClassName="active" to="/login-out">{props.loginMsg}</NavLink></li>
+</li>
 </ul>
+</React.Fragment>
   );
 };
 
@@ -184,6 +217,23 @@ const FindBook = (props) => {
     </div>
     }
   </div>
+  );
+}
+
+const Login = (props) => {
+  //If redirected from a protected page
+  const {state } = useLocation();
+  const from = state ? state.from : "/";
+  return(
+  <React.Fragment>
+    <h1>Welcome to login page</h1>
+    <p>This a simulation of a login page</p>
+    <button onClick={()=>{
+      props.login(from);
+    }}>
+    {props.loginMsg}
+    </button>
+  </React.Fragment>
   );
 }
 
