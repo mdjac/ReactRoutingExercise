@@ -8,10 +8,11 @@ import {
   useParams,
   useRouteMatch, 
   NavLink,
-  useLocation
+  useLocation,
+  Prompt
 } from "react-router-dom";
 import { useState } from 'react';
-
+import {Details} from './components/details';
 
 function App(props) {
   return (
@@ -30,6 +31,9 @@ function App(props) {
     <Route path="/add-book">
       <AddBook bookFacade={props.bookFacade}/>
     </Route>
+    <Route path="/find-book">
+      <FindBook bookFacade={props.bookFacade}/>
+    </Route>
     <Route path="*">
             <NoMatch />
     </Route>
@@ -45,6 +49,7 @@ const Header = () => {
   <li><NavLink activeClassName="active" to="/products">Products</NavLink></li>
   <li><NavLink activeClassName="active" to="/add-book">Add Book</NavLink></li>
   <li><NavLink activeClassName="active" to="/company">Company</NavLink></li>
+  <li><NavLink activeClassName="active" to="/find-book">Find Book</NavLink></li>
 </ul>
   );
 };
@@ -53,11 +58,13 @@ const Header = () => {
 const AddBook = (props) => {
   const initialState = {title:"",info:""};
   const [book, setBook] = useState(initialState);
+  let [isBlocking,setIsBlocking] = useState(false);
 
   const submit = (event) => {
     event.preventDefault();
     props.bookFacade.addBook(book);
     setBook(initialState);
+    setIsBlocking(false);
   }
 
   const change = (evt) => {
@@ -65,9 +72,14 @@ const AddBook = (props) => {
     const changedValue = target.id;
     book[changedValue] = target.value;
     setBook({...book})
+    setIsBlocking(target.value.length > 0);
   }
   return (<>
     <form onSubmit={submit}>
+    <Prompt
+        when={isBlocking}
+        message="Are you sure you want to continue without saving?"
+      />
       <label>
       Title:
       <input id="title" value={book.title} type="text" name="title" onChange={change}/>
@@ -89,13 +101,24 @@ const Home = () => {
 
 const Products = (props) => {
   const books = props.bookFacade.getBooks();
+  let { path, url } = useRouteMatch();
   return (
     <>
       <ul>
         {books.map(book =>{
-          return <li key={book.id}>{book.title}</li>
+          return (
+          <li key={book.id}>
+            {book.title}  <Link to={`${url}/${book.id}`}>Details</Link>
+          </li>
+          );
         })}
       </ul>
+      <Switch>
+        <Route path={`${path}/:bookId`}>
+          <Details bookFacade={props.bookFacade}/>
+        </Route>
+      </Switch>
+      {console.log(path,url)}
     </>
   );
 };
@@ -114,6 +137,44 @@ const NoMatch = () => {
     </div>
   );
 }
+
+const FindBook = (props) => {
+  let [book, setBook] = useState();
+  const submitAction = (evt) => {
+    evt.preventDefault();
+    const bookId = evt.target.id.value;
+    let tempBook = props.bookFacade.findBook(bookId);
+    tempBook ? setBook(tempBook) : alert("Book not found");
+  }
+  return (
+  <div>
+    <div>
+      <form onSubmit={submitAction}>
+      <label>
+        Book ID:<br/>
+        <input type="number" name="id"/>
+      </label>
+      <input type="submit" value="Find" />
+      </form>
+    </div>
+    {book && 
+    <div>
+      ID: {book.id}<br/>
+      Title: {book.title}<br/>
+      Info: {book.info}<br/>
+      <button onClick={()=>{
+        setBook();
+        props.bookFacade.deleteBook(book.id);
+      }}>
+      Delete book
+      </button>
+    </div>
+    }
+  </div>
+  );
+}
+
+
 
 
 
