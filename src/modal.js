@@ -23,8 +23,7 @@ const FormModal = (props) => {
       },[props.inputbook()]);
 
     return (
-      <Modal 
-      {...props} 
+      <Modal show={props.show}
       aria-labelledby="contained-modal-title-vcenter" 
     // centered //Try these 2 settings out
     // fullscreen
