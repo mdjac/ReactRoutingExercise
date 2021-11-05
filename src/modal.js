@@ -3,27 +3,25 @@ import React, { useState, useEffect } from 'react';
 
 
 const FormModal = (props) => {
-    console.log('This modal uses grid for layout')
-    const emptyState = props.inputbook;
-    const [state, setState] = useState(emptyState);
+    const [state, setState] = useState(props.inputbook());
     const handleChange = (evt) => {
             setState({ ...state, [evt.target.id]: evt.target.value });
-            console.log(state);
     }
 
     const handleSubmit = (evt) => {
         evt.preventDefault();
-        if (state.title && state.info) {
-            console.log(props);
-            setState(props.bookfacade.editBook(props.inputbook.id,state));
-        }
-        else {
-            console.log('Missed it', state);
-        }
-        setState(emptyState);
         console.log('STATE',state);
+        props.bookfacade.editBook(state.id,state);
+        props.setbook(state);
         props.onHide();
+        //setState(props.inputbook());
     }
+
+
+    useEffect(() => {
+        setState(props.inputbook());
+      },[props.inputbook()]);
+
     return (
       <Modal 
       {...props} 
@@ -59,9 +57,8 @@ const FormModal = (props) => {
         <Modal.Footer>
           <Button onClick={
               ()=>{
-                  setState(emptyState);
+                  setState(props.inputbook());
                   props.onHide()
-                  
               }}>Close
               </Button>
         </Modal.Footer>

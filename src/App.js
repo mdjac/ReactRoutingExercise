@@ -143,12 +143,17 @@ const NoMatch = () => {
 
 const FindBook = (props) => {
   let [book, setBook] = useState();
+  console.log("BOOK",book);
   const [formModalShow, setFormModalShow] = useState(false);
   const submitAction = (evt) => {
     evt.preventDefault();
     const bookId = evt.target.id.value;
     let tempBook = props.bookFacade.findBook(bookId);
     tempBook ? setBook(tempBook) : alert("Book not found");
+  }
+
+  const getBook = () =>{
+    return book;
   }
   return (
   <div>
@@ -175,7 +180,7 @@ const FindBook = (props) => {
       <button onClick={() => setFormModalShow(true)}>
       Edit book
       </button>
-      <MyModal inputbook={book} bookfacade={props.bookFacade} show={formModalShow} onHide={() => setFormModalShow(false)} />
+      <MyModal inputbook={getBook} setbook={setBook} bookfacade={props.bookFacade} show={formModalShow} onHide={() => setFormModalShow(false)} />
     </div>
     }
   </div>
